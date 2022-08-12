@@ -9,7 +9,6 @@ namespace EntregaFinal
         static void Main(string[] args)
         {
             //Variables para controlar las opciones del Menú
-            int valor;
             string opcion;
             
             do
@@ -84,7 +83,7 @@ namespace EntregaFinal
                 VentaHandler venta_handler = new VentaHandler();
                 List<Venta> listadoventas = new List<Venta>();
 
-                listadoventas = venta_handler.BuscarVentasTotales(2);
+                listadoventas = venta_handler.BuscarVentasTotales(1);
                 Console.WriteLine("Breakpoint");
             }
 

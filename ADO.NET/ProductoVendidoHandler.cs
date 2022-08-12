@@ -19,7 +19,6 @@ namespace EntregaFinal
             DataTable temp_table = new DataTable();
             
             List<ProductoVendido> Lista_productos = new List<ProductoVendido>();
-            ProductoVendido obj_producto = new ProductoVendido();
 
             using (SqlConnection sqlConnection = new SqlConnection(Connection_String))
             {
@@ -36,6 +35,7 @@ namespace EntregaFinal
 
                     foreach (DataRow line in temp_table.Rows)
                     {
+                        ProductoVendido obj_producto = new ProductoVendido();
                         obj_producto.IdUsuario = Convert.ToInt32(line["IdUsuario"]);
                         obj_producto.IdProducto = Convert.ToInt32(line["IdProducto"]);
                         obj_producto.Descripciones = line["Descripciones"].ToString();
