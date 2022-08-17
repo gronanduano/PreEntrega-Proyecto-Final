@@ -98,5 +98,168 @@ namespace EntregaFinal
             }
             return obj_usuario;
         }
+
+        //Este método va a crear un nuevo usuario y retorna un texto con el resultado 
+        public string InsertarUsuario(Usuario obj_usuario)
+        {
+            //En este String vamos a capturar el resultado para devolver si se pudo modificar o no
+            string Response = String.Empty;
+            int registros_insertados = 0;
+
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(Connection_String))
+                {
+                    string QueryUpdate = "INSERT INTO Usuario ( Nombre, Apellido, NombreUsuario, Contraseña, Mail ) VALUES " +
+                        "( @Nombre, @Apellido, @NombreUsuario, @Contraseña, @Mail )";
+
+                    //Parámetros
+                    SqlParameter param_Nombre = new SqlParameter("Nombre", SqlDbType.VarChar) { Value = obj_usuario.Nombre };
+                    SqlParameter param_Apellido = new SqlParameter("Apellido", SqlDbType.VarChar) { Value = obj_usuario.Apellido };
+                    SqlParameter param_NombreUsuario = new SqlParameter("NombreUsuario", SqlDbType.VarChar) { Value = obj_usuario.NombreUsuario };
+                    SqlParameter param_Contraseña = new SqlParameter("Contraseña", SqlDbType.VarChar) { Value = obj_usuario.Contraseña };
+                    SqlParameter param_Mail = new SqlParameter("Mail", SqlDbType.VarChar) { Value = obj_usuario.Mail };
+
+                    sqlConnection.Open();
+                    using (SqlCommand sqlCommand = new SqlCommand(QueryUpdate, sqlConnection))
+                    {
+                        sqlCommand.Parameters.Add(param_Nombre);
+                        sqlCommand.Parameters.Add(param_Apellido);
+                        sqlCommand.Parameters.Add(param_NombreUsuario);
+                        sqlCommand.Parameters.Add(param_Contraseña);
+                        sqlCommand.Parameters.Add(param_Mail);
+                        registros_insertados = sqlCommand.ExecuteNonQuery();
+                    }
+                    if (registros_insertados == 1)
+                    {
+                        Response = "El usuario ha sido creado.";
+                    }
+                    else
+                    {
+                        Response = "El usuario no ha sido creado.";
+                    }
+                    sqlConnection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Response = "El usuario no ha sido creado. - Detalle Error: " + ex.Message;
+            }
+            return Response;
+        }
+
+        //Este método va a modificar los datos de un usuario y retorna un texto con el resultado 
+        public string ModificarUsuario(Usuario obj_usuario)
+        {
+            //En este String vamos a capturar el resultado para devolver si se pudo modificar o no
+            string Response = String.Empty;
+            int registros_actualizados = 0;
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(Connection_String))
+                {
+                    string QueryUpdate = "UPDATE Usuario SET Nombre = @Nombre, Apellido = @Apellido, NombreUsuario = @NombreUsuario, Contraseña = @Contraseña, Mail = @Mail WHERE Id = @IdUsuario";
+
+                    //Parámetros IdUsuario
+                    SqlParameter parametroUsuarioId = new SqlParameter("IdUsuario", System.Data.SqlDbType.BigInt) { Value = obj_usuario.Id };
+                    SqlParameter param_Nombre = new SqlParameter("Nombre", System.Data.SqlDbType.BigInt) { Value = obj_usuario.Nombre };
+                    SqlParameter param_Apellido = new SqlParameter("Apellido", System.Data.SqlDbType.BigInt) { Value = obj_usuario.Apellido };
+                    SqlParameter param_NombreUsuario = new SqlParameter("NombreUsuario", System.Data.SqlDbType.BigInt) { Value = obj_usuario.NombreUsuario };
+                    SqlParameter param_Contraseña = new SqlParameter("Contraseña", System.Data.SqlDbType.BigInt) { Value = obj_usuario.Contraseña };
+                    SqlParameter param_Mail = new SqlParameter("Mail", System.Data.SqlDbType.BigInt) { Value = obj_usuario.Mail };
+
+                    sqlConnection.Open();
+                    using (SqlCommand sqlCommand = new SqlCommand(QueryUpdate, sqlConnection))
+                    {
+                        sqlCommand.Parameters.Add(parametroUsuarioId);
+                        sqlCommand.Parameters.Add(param_Nombre);
+                        sqlCommand.Parameters.Add(param_Apellido);
+                        sqlCommand.Parameters.Add(param_NombreUsuario);
+                        sqlCommand.Parameters.Add(param_Contraseña);
+                        sqlCommand.Parameters.Add(param_Mail);
+                        registros_actualizados = sqlCommand.ExecuteNonQuery();
+                    }
+                    if (registros_actualizados == 1)
+                    {
+                        Response = "Se ha actualizado el Id de usuario: " + obj_usuario.Id;
+                    }
+                    else
+                    {
+                        Response = "No se ha actualizado información para el Id de usuario: " + obj_usuario.Id;
+                    }
+                    sqlConnection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Response = "Error al actualizar Id de usuario: " + obj_usuario.Id + " - Detalle Error: " + ex.Message;
+            }
+            return Response;
+        }
+
+        //Este método va a eliminar un usuario según ID y retorna un texto con el resultado 
+        public string EliminarUsuario(int IDUsuario)
+        {
+            //En este String vamos a capturar el resultado para devolver si se pudo modificar o no
+            string Response = String.Empty;
+            int registros_eliminados = 0;
+
+            try
+            {
+                using (SqlConnection sqlConnection = new SqlConnection(Connection_String))
+                {
+                    //Parámetros
+                    SqlParameter param_IdUsuario = new SqlParameter("IdUsuario", System.Data.SqlDbType.BigInt) { Value = IDUsuario };
+
+                    //Primero se deben eliminar los datos de la tabla producto_vendido porque tiene un FK
+                    string QueryDelete_prodvendido = "DELETE pv FROM ProductoVendido pv JOIN Producto p ON pv.IdProducto = p.Id JOIN Usuario u ON p.IdUsuario = u.Id WHERE u.Id = @IdUsuario";
+
+                    sqlConnection.Open();
+                    using (SqlCommand sqlCommand = new SqlCommand(QueryDelete_prodvendido, sqlConnection))
+                    {
+                        sqlCommand.Parameters.Add(param_IdUsuario);
+                        registros_eliminados = sqlCommand.ExecuteNonQuery();
+                        sqlCommand.Parameters.Clear();
+                    }
+                    sqlConnection.Close();
+
+                    //Después se deben eliminar los datos de la tabla producto porque tiene un FK
+                    string QueryDelete_producto = "DELETE p FROM Producto p JOIN Usuario u ON p.IdUsuario = u.Id WHERE u.Id = @IdUsuario";
+                    
+                    sqlConnection.Open();
+                    using (SqlCommand sqlCommand = new SqlCommand(QueryDelete_producto, sqlConnection))
+                    {
+                        sqlCommand.Parameters.Add(param_IdUsuario);
+                        registros_eliminados = sqlCommand.ExecuteNonQuery();
+                        sqlCommand.Parameters.Clear();
+                    }
+                    sqlConnection.Close();
+
+                    //Después se elimina de la tabla Usuario
+                    string QueryUpdate = "DELETE FROM Usuario WHERE Id = @IdUsuario";
+
+                    sqlConnection.Open();
+                    using (SqlCommand sqlCommand = new SqlCommand(QueryUpdate, sqlConnection))
+                    {
+                        sqlCommand.Parameters.Add(param_IdUsuario);
+                        registros_eliminados = sqlCommand.ExecuteNonQuery();
+                    }
+                    if (registros_eliminados == 1)
+                    {
+                        Response = "El usuario ha sido eliminado.";
+                    }
+                    else
+                    {
+                        Response = "El usuario no ha sido eliminado.";
+                    }
+                    sqlConnection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Response = "El usuario no ha sido eliminado. - Detalle Error: " + ex.Message;
+            }
+            return Response;
+        }
     }
 }
